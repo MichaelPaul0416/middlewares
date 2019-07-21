@@ -18,7 +18,7 @@ public class RedisOperationHelper {
 
     public void plainCache(String key, String value) {
         redisTemplate.opsForValue().set(key, value);
-        logger.info("[key{}/value{}] 加入缓存成功", key, value);
+        logger.info("[key:{}/value:{}] 加入缓存成功", key, value);
     }
 
     public boolean plainCacheIfAbsent(String key,String value){

@@ -35,6 +35,14 @@ public class RedisOperationHelperTest {
     }
 
     @Test
+    public void redisGetAndSet(){
+        String s = redisOperation.plainGetAndSet("1","one");
+        logger.info("get and set-1:{}",s);//null
+        s = redisOperation.plainGetAndSet("1","two");
+        logger.info("get and set-2:{}",s);//one
+    }
+
+    @Test
     public void distributeLock() {
         String key = "paul";
         CountDownLatch monitor = new CountDownLatch(5);
@@ -42,7 +50,7 @@ public class RedisOperationHelperTest {
 
             serviceWorkerPool.execute(() -> {
                 //获取锁的过程发放在外面，获取锁时失败[发生异常，不是返回false]的话，就不需要unlock
-                boolean ok = redisDistributeLock.lock(key);
+                boolean ok = redisDistributeLock.lock(key,5);
                 try {
                     if (!ok) {
                         logger.info("redis distribute obtain failed[" + Thread.currentThread().getName() + "]");
@@ -51,6 +59,8 @@ public class RedisOperationHelperTest {
 
                     logger.info("redis distribute lock obtain successfully[{}]", Thread.currentThread().getName());
                     redisOperation.plainCache("thread", Thread.currentThread().getName());
+
+//                    Thread.sleep(1000 *3);
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 } finally {

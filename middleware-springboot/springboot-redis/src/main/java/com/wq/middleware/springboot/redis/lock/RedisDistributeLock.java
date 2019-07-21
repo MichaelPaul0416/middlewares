@@ -8,12 +8,15 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 
+/**
+ * 简化版的redis分布式锁，不涉及可重入，过期续费，加锁解锁同一个这些特性
+ */
 @Component
 public class RedisDistributeLock {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisDistributeLock.class);
 
-    private static final int finalDefaultTTLWithKety = 24 * 3600;
+    private static final int finalDefaultTTLWithKey = 24 * 3600;
 
     private static final long defaultExpireTime = 20 * 1000;
 
@@ -36,17 +39,18 @@ public class RedisDistributeLock {
         long now = Instant.now().toEpochMilli();
         long lockExpireTime = now + expireTime;
 
-        boolean result = redisOperationHelper.plainCacheIfAbsent(key, String.valueOf(expireTime));
+        boolean result = redisOperationHelper.plainCacheIfAbsent(key, String.valueOf(lockExpireTime));//设置key的过期时间deadline
         if (result) {
-            redisOperationHelper.plainCacheSetExpire(key, finalDefaultTTLWithKety);
+            redisOperationHelper.plainCacheSetExpire(key, finalDefaultTTLWithKey);
             logger.info("get distribute lock for key[{}] successfully", key);
             return true;
         }
 
         Object valueFromRedis = getKeyWithRetry(key, 3);
         if (valueFromRedis == null) {
-            //retry之后获取的还是null，说明可能是redis挂了
-            throw new IllegalStateException("3 times retry and value of key[" + key + "] is still failed,and the redis server may be unAvailable");
+            //retry之后获取的还是null，说明可能是redis挂了或者已经被释放（key被删除）
+            throw new IllegalStateException("3 times retry and value of key[" + key + "] is still failed," +
+                    "and the redis server may be unAvailable or the lock has been released");
         }
 
         long oldExpireTime = Long.parseLong((String) valueFromRedis);
@@ -60,7 +64,7 @@ public class RedisDistributeLock {
             if(Long.valueOf(value) == oldExpireTime){
                 logger.info("get redis distribute lock[{}] successfully",key);
                 //设置超时时间
-                this.redisOperationHelper.plainCacheSetExpire(key,finalDefaultTTLWithKety);
+                this.redisOperationHelper.plainCacheSetExpire(key, finalDefaultTTLWithKey);
                 return true;
             }else {
                 return false;
@@ -73,7 +77,7 @@ public class RedisDistributeLock {
     public boolean unlock(String key){
         logger.info("unlock redis distribute lock[{}]",key);
         this.redisOperationHelper.plainRemoveByKey(key);
-        return true;
+        return Success;
     }
 
     private Object getKeyWithRetry(String key, int retryTimes) {
