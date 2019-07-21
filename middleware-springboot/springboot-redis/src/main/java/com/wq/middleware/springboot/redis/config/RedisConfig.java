@@ -69,7 +69,7 @@ public class RedisConfig {
         }
         @Override
         public Thread newThread(Runnable r) {
-            Thread t = new Thread(threadGroup,r,prefixThread + "-" + threadNumber.getAndAdd(1),0);
+            Thread t = new Thread(threadGroup,r,prefixThread + threadNumber.getAndAdd(1) + "-thread",0);
             if (t.isDaemon()){
                 t.setDaemon(false);
             }
