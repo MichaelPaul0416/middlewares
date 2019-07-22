@@ -14,6 +14,12 @@ import javax.annotation.Resource;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 
+/**
+ * @Author: wangqiang20995
+ * @Date:2019/7/22
+ * @Description:
+ * @Resource:
+ */
 @SpringBootTest(classes = {RedisApplication.class})
 @RunWith(SpringJUnit4ClassRunner.class)
 public class RedisOperationHelperTest {
