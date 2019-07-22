@@ -1,7 +1,7 @@
 package com.wq.middleware.springboot.redis.util;
 
 import com.wq.middleware.springboot.redis.RedisApplication;
-import com.wq.middleware.springboot.redis.lock.RedisDistributeLock;
+import com.wq.middleware.springboot.redis.lock.SimpleRedisDistributeLock;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -25,7 +25,7 @@ public class RedisOperationHelperTest {
     private ThreadPoolExecutor serviceWorkerPool;
 
     @Autowired
-    private RedisDistributeLock redisDistributeLock;
+    private SimpleRedisDistributeLock simpleRedisDistributeLock;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -50,7 +50,7 @@ public class RedisOperationHelperTest {
 
             serviceWorkerPool.execute(() -> {
                 //获取锁的过程发放在外面，获取锁时失败[发生异常，不是返回false]的话，就不需要unlock
-                boolean ok = redisDistributeLock.lock(key,5);
+                boolean ok = simpleRedisDistributeLock.lock(key,5);
                 try {
                     if (!ok) {
                         logger.info("redis distribute obtain failed[" + Thread.currentThread().getName() + "]");
@@ -65,7 +65,7 @@ public class RedisOperationHelperTest {
                     logger.error(e.getMessage(), e);
                 } finally {
                     if(ok) {
-                        redisDistributeLock.unlock(key);
+                        simpleRedisDistributeLock.unlock(key);
                     }
                     monitor.countDown();
                 }

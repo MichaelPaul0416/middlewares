@@ -1,5 +1,6 @@
 package com.wq.middleware.springboot.redis;
 
+import com.wq.middleware.springboot.redis.lock.SimpleRedisDistributeLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -25,6 +26,14 @@ public class RedisApplication {
         if (applicationContext != null){
             logger.info("spring boot application started...");
         }
+
+        SimpleRedisDistributeLock lock = applicationContext.getBean(SimpleRedisDistributeLock.class);
+        lock.lock("hello");
+
+        logger.info("hello{}","world");
+
+        lock.unlock("hello");
+
 
     }
 }
