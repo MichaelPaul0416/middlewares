@@ -7,6 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
 
 /**
  * @Author: wangqiang20995
@@ -16,6 +17,7 @@ import org.springframework.context.ApplicationContext;
  */
 @SpringBootApplication
 @EnableAutoConfiguration
+@ComponentScan(basePackages = "com.wq.middleware.springboot.redis")
 public class RedisApplication {
 
 
